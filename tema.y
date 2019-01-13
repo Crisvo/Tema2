@@ -114,7 +114,7 @@ typedef struct punct { int x,y,z; } PUNCT;
 %token <sir> TOK_ID TOK_ERROR
 
 %type <sir> id_list
-%type <val> exp
+%type <sir> exp
 
 %start prog
 
@@ -143,14 +143,42 @@ dec_list : dec
 	;
 
 dec : id_list ':' type
+	{
+		char* id = strtok($1, ",");
+		while(id != NULL){
+			if(ts != NULL){
+				if(ts->exists(id) == 0){
+					ts->append(id);
+				}
+				else{
+					IsCorrect = 0;
+					sprintf(message, "%d:%d Eroare sintactica: Var %s, a fost declarata de mai multe ori!", @1.first_line, @1.first_column, $1);
+					yyerror(message);
+					YYERROR;
+				}
+			}
+			else{
+				ts = new TVAR();
+				ts->append(id);
+			}
+			id = strtok(NULL, ",");
+		}
+	}
 	;
 
 type : TOK_INTEGER
 	;
 
 id_list : TOK_ID
+	{
+		strcpy($$, $1);
+	}
 	|
 	id_list ',' TOK_ID
+	{
+		strcat($$, ",");
+		strcat($$, $3);
+	}
 	;
 
 stmt_list : stmt
@@ -168,6 +196,22 @@ stmt : assign
 	;
 
 assign : TOK_ID TOK_ATRIB exp
+	{
+		if(ts!=NULL){
+			if(ts->exists($1) == 0){
+				IsCorrect = 0;
+				sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, $1);
+				yyerror(message);
+				YYERROR;
+			}
+		}
+		else {
+			IsCorrect = 0;
+			sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, $1);
+			yyerror(message);
+			YYERROR;
+		}
+	}
 	;
 
 exp : term
@@ -185,6 +229,22 @@ term : factor
 	;
 
 factor : TOK_ID
+	{
+		if(ts!=NULL){
+			if(ts->exists($1) == 0){
+				IsCorrect = 0;
+				sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, $1);
+				yyerror(message);
+				YYERROR;
+			}
+		}
+		else {
+			IsCorrect = 0;
+			sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, $1);
+			yyerror(message);
+			YYERROR;
+		}
+	}
 	|
 	TOK_NUMBER
 	|
@@ -192,15 +252,71 @@ factor : TOK_ID
 	;
 
 read : TOK_READ TOK_LEFT id_list TOK_RIGHT
+	{
+		char* id = strtok($3, ",");
+		while(id != NULL){
+			if(ts!=NULL){
+				if(ts->exists(id) == 0){
+					IsCorrect = 0;
+					sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, id);
+					yyerror(message);
+					YYERROR;
+				}
+			}
+			else {
+				IsCorrect = 0;
+				sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, id);
+				yyerror(message);
+				YYERROR;
+			}
+			id = strtok(NULL, ",");
+		}
+	}
 	;
 
 write : TOK_WRITE TOK_LEFT id_list TOK_RIGHT
+	{
+		char* id = strtok($3, ",");
+		while(id != NULL){
+			if(ts!=NULL){
+				if(ts->exists(id) == 0){
+					IsCorrect = 0;
+					sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, id);
+					yyerror(message);
+					YYERROR;
+				}
+			}
+			else {
+				IsCorrect = 0;
+				sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, id);
+				yyerror(message);
+				YYERROR;
+			}
+			id = strtok(NULL, ",");
+		}
+	}
 	;
 
 for : TOK_FOR index_exp TOK_DO body
 	;
 
 index_exp : TOK_ID TOK_ATRIB exp TOK_TO exp
+	{
+		if(ts!=NULL){
+			if(ts->exists($1) == 0){
+				IsCorrect = 0;
+				sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, $1);
+				yyerror(message);
+				YYERROR;
+			}
+		}
+		else {
+			IsCorrect = 0;
+			sprintf(message, "%d:%d Eroare sintactica: Var %s, a nu a fost declarata!", @1.first_line, @1.first_column, $1);
+			yyerror(message);
+			YYERROR;
+		}
+	}
 	;
 
 body : stmt
